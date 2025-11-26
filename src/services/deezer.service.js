@@ -30,7 +30,8 @@ export const searchDeezer = async (
   limit = 20,
   index = 0,
 ) => {
-  const url = `${DEEZER_API_URL}/search/${type}`;
+  const basePath = type === 'track' ? 'search' : `search/${type}`;
+  const url = `${DEEZER_API_URL}/${basePath}`;
   const params = { q, limit, index };
 
   const { data } = await axios.get(url, { params });
