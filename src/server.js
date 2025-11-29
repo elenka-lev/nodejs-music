@@ -7,6 +7,7 @@ import chartRouter from './routes/chart.routes.js';
 import artistRouter from './routes/artist.routes.js';
 import albumRouter from './routes/album.routes.js';
 import searchRouter from './routes/search.routes.js';
+import authRouter from './routes/auth.routes.js';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ export const startServer = () => {
     });
   });
 
+  app.use('/api/auth', authRouter);
   app.use('/api/charts', chartRouter);
   app.use('/api/artists', artistRouter);
   app.use('/api/albums', albumRouter);
@@ -49,6 +51,8 @@ export const startServer = () => {
       error: err.message,
     });
   });
+
+  
 
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
