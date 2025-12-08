@@ -5,9 +5,11 @@ import dotenv from 'dotenv';
 import { getEnvVar } from './utils/getEnvVar.js';
 import chartRouter from './routes/chart.routes.js';
 import artistRouter from './routes/artist.routes.js';
+import genreRouter from './routes/genre.routes.js';
 import albumRouter from './routes/album.routes.js';
 import searchRouter from './routes/search.routes.js';
 import authRouter from './routes/auth.routes.js';
+import favoritesRouter from './routes/favorites.routes.js';
 
 dotenv.config();
 
@@ -34,11 +36,12 @@ export const startServer = () => {
   });
 
   app.use('/api/auth', authRouter);
+  app.use('/api/favorites', favoritesRouter);
   app.use('/api/charts', chartRouter);
   app.use('/api/artists', artistRouter);
   app.use('/api/albums', albumRouter);
   app.use('/api/search', searchRouter);
-
+  app.use('/api/genres', genreRouter);
   app.use((req, res) => {
     res.status(404).json({
       message: 'Not found',

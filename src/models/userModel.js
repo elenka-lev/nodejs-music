@@ -10,10 +10,13 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    password: { type: String, required: true }, 
+    password: { type: String, required: true },
     googleId: { type: String },
     avatar: { type: String },
-    favorites: [{ type: String }], 
+    favorites: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true },
 );

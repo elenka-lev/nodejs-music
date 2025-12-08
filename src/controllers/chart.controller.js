@@ -12,7 +12,7 @@ export const getTopCharts = async (req, res, next) => {
 export const getTopTracks = async (req, res, next) => {
   try {
     const data = await fetchTopCharts();
-    res.json(data.tracks.data); // Отправляем только массив песен
+    res.json(data.tracks.data);
   } catch (error) {
     next(error);
   }

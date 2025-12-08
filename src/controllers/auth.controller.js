@@ -3,7 +3,6 @@ import { registerUser, loginUser } from '../services/authService.js';
 
 export const register = async (req, res, next) => {
   try {
-    // express-validator results (если используешь)
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -11,7 +10,7 @@ export const register = async (req, res, next) => {
 
     const { name, email, password } = req.body;
     const result = await registerUser({ name, email, password });
-    res.status(201).json(result); // { user: {...}, token }
+    res.status(201).json(result); 
   } catch (e) {
     next(e);
   }
@@ -25,7 +24,7 @@ export const login = async (req, res, next) => {
 
     const { email, password } = req.body;
     const result = await loginUser({ email, password });
-    res.json(result); // { user, token }
+    res.json(result); 
   } catch (e) {
     next(e);
   }
