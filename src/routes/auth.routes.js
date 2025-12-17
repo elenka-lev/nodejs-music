@@ -1,6 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { register, login } from '../controllers/auth.controller.js';
+import { googleLogin } from '../controllers/googleOAuth.js';
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ router.post(
   ],
   register,
 );
-
+router.post('/google', googleLogin);
 router.post(
   '/login',
   [
