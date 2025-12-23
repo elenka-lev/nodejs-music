@@ -2,6 +2,11 @@ import express from 'express';
 import pino from 'pino-http';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path'; 
+import { fileURLToPath } from 'url'; 
+import YAML from 'yamljs'; 
+import swaggerUi from 'swagger-ui-express';
+
 import { getEnvVar } from './utils/getEnvVar.js';
 import chartRouter from './routes/chart.routes.js';
 import artistRouter from './routes/artist.routes.js';
@@ -12,6 +17,9 @@ import authRouter from './routes/auth.routes.js';
 import favoritesRouter from './routes/favorites.routes.js';
 
 dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const swaggerDocument = YAML.load(path.join(__dirname, '../docs/openapi.yaml'));
 
 const PORT = Number(getEnvVar('PORT', '3000'));
 
@@ -29,6 +37,8 @@ export const startServer = () => {
     }),
   );
 
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  
   app.get('/', (req, res) => {
     res.json({
       message: 'Hello world!',

@@ -1,0 +1,204 @@
+openapi: 3.1.0
+info:
+  title: NodeJS Music API
+  version: 1.0.0
+  description: |
+    Backend API for a music application.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+  - url: https://nodejs-music-vq0y.onrender.com/api
+    description: Production server (Render)
+
+tags:
+  - name: Auth
+    description: User authentication
+  - name: Artists
+    description: Artists related endpoints
+  - name: Charts
+    description: Top charts
+  - name: Favorites
+    description: User favorites (requires auth)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    User:
+      type: object
+      required: [id, name, email]
+      properties:
+        id: { type: string, example: "65842a1f" }
+        name: { type: string, example: "Elena" }
+        email: { type: string, example: "elena@gmail.com" }
+    
+    Artist:
+      type: object
+      properties:
+        id: { type: string, example: "123" }
+        name: { type: string, example: "Dua Lipa" }
+        picture: { type: string, example: "https://url-to-image.com" }
+    
+    Track:
+      type: object
+      properties:
+        id: { type: string, example: "789" }
+        title: { type: string, example: "Levitating" }
+        preview: { type: string, example: "https://url-to-preview.mp3" }
+        artist: { $ref: '#/components/schemas/Artist' }
+
+paths:
+  /auth/register:
+    post:
+      operationId: registerUser
+      tags: [Auth]
+      summary: Register new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string, example: Elena }
+                email: { type: string, example: elena@gmail.com }
+                password: { type: string, example: "123456" }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400':
+          description: Invalid input or user already exists
+
+  /auth/login:
+    post:
+      operationId: loginUser
+      tags: [Auth]
+      summary: User login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, example: elena@gmail.com }
+                password: { type: string, example: "123456" }
+      responses:
+        '200':
+          description: Success
+        '401':
+          description: Unauthorized
+
+  /auth/google:
+    post:
+      operationId: googleLogin
+      tags: [Auth]
+      summary: Google OAuth
+      security: []
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: OAuth failed
+
+  /charts:
+    get:
+      operationId: getCharts
+      tags: [Charts]
+      summary: Get top charts
+      security: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tracks: { type: array, items: { $ref: '#/components/schemas/Track' } }
+        '404':
+          description: Charts not found
+
+  /artists/{id}/top:
+    get:
+      operationId: getArtistTopTracks
+      tags: [Artists]
+      summary: Get artist top tracks
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Success
+        '404':
+          description: Artist not found
+
+  /favorites:
+    get:
+      operationId: getFavorites
+      tags: [Favorites]
+      summary: Get user favorites
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+        '401':
+          description: Token missing or invalid
+    post:
+      operationId: addToFavorites
+      tags: [Favorites]
+      summary: Add to favorites
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trackId: { type: string }
+      responses:
+        '201':
+          description: Added
+        '401':
+          description: Unauthorized
+
+    delete:
+      operationId: removeFromFavorites
+      tags: [Favorites]
+      summary: Remove from favorites
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trackId: { type: string }
+      responses:
+        '200':
+          description: Removed
+        '401':
+          description: Unauthorized
