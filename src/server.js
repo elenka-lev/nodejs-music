@@ -38,7 +38,7 @@ export const startServer = () => {
   );
 
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-  
+
   app.get('/', (req, res) => {
     res.json({
       message: 'Hello world!',
@@ -71,3 +71,4 @@ export const startServer = () => {
     console.log(`Server is running on port ${PORT}`);
   });
 };
+startServer();
