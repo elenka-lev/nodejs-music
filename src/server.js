@@ -17,9 +17,12 @@ import authRouter from './routes/auth.routes.js';
 import favoritesRouter from './routes/favorites.routes.js';
 
 dotenv.config();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const swaggerDocument = YAML.load(path.join(__dirname, '../docs/openapi.yaml'));
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+// const swaggerDocument = YAML.load(path.join(__dirname, '../docs/openapi.yaml'));
+const swaggerDocument = YAML.load(
+  path.join(process.cwd(), 'docs', 'openapi.yaml'),
+);
 
 const PORT = Number(getEnvVar('PORT', '3000'));
 
