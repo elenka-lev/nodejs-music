@@ -138,7 +138,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              
+
   /auth/google:
     post:
       operationId: googleLogin
@@ -154,9 +154,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [token]
+              required: [idToken]
               properties:
-                token:
+                idToken:
                   type: string
                   description: The ID Token from Google
                   example: "eyJhbGciOiJSUzI1NiIs..."
