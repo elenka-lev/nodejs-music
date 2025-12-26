@@ -2,8 +2,7 @@ openapi: 3.1.0
 info:
   title: NodeJS Music API
   version: 1.0.0
-  description: |
-    Backend API for a music application.
+  description: Backend API for a music application (Deezer integration).
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -17,12 +16,18 @@ servers:
 tags:
   - name: Auth
     description: User authentication
+  - name: Discovery
+    description: Exploration via genres and playlists
   - name: Artists
     description: Artists related endpoints
+  - name: Albums
+    description: Album details and tracks
   - name: Charts
     description: Top charts
   - name: Favorites
     description: User favorites (requires auth)
+  - name: Search
+    description: Search functionality
 
 components:
   securitySchemes:
@@ -39,7 +44,15 @@ components:
         id: { type: string, example: "65842a1f" }
         name: { type: string, example: "Elena" }
         email: { type: string, example: "elena@gmail.com" }
+        avatar: { type: string, example: "https://url.com/photo.jpg" }
+        favorites: { type: array, items: { type: string } }
     
+    Error:
+      type: object
+      properties:
+        message: { type: string, example: "Resource not found" }
+        error: { type: string }
+
     Artist:
       type: object
       properties:
@@ -47,6 +60,14 @@ components:
         name: { type: string, example: "Dua Lipa" }
         picture: { type: string, example: "https://url-to-image.com" }
     
+    Album:
+      type: object
+      properties:
+        id: { type: string, example: "456" }
+        title: { type: string, example: "Future Nostalgia" }
+        cover: { type: string, example: "https://url-to-cover.jpg" }
+        artist: { type: string, example: "Dua Lipa" }
+
     Track:
       type: object
       properties:
@@ -55,7 +76,15 @@ components:
         preview: { type: string, example: "https://url-to-preview.mp3" }
         artist: { $ref: '#/components/schemas/Artist' }
 
+    Genre:
+      type: object
+      properties:
+        id: { type: string, example: "132" }
+        name: { type: string, example: "Pop" }
+        picture: { type: string, example: "https://url.com/pop.jpg" }
+
 paths:
+  # --- AUTH ---
   /auth/register:
     post:
       operationId: registerUser
@@ -80,7 +109,10 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/User' }
         '400':
-          description: Invalid input or user already exists
+          description: Bad request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
 
   /auth/login:
     post:
@@ -103,36 +135,130 @@ paths:
           description: Success
         '401':
           description: Unauthorized
-
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              
   /auth/google:
     post:
       operationId: googleLogin
       tags: [Auth]
-      summary: Google OAuth
+      summary: Authenticate with Google
       security: []
+      description: |
+        Exchange a Google ID Token for a local JWT. 
+        The frontend should send the token received from the Google Identity Services.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+                  description: The ID Token from Google
+                  example: "eyJhbGciOiJSUzI1NiIs..."
       responses:
         '200':
-          description: Success
-        '400':
-          description: OAuth failed
-
-  /charts:
-    get:
-      operationId: getCharts
-      tags: [Charts]
-      summary: Get top charts
-      security: []
-      responses:
-        '200':
-          description: Success
+          description: Successfully authenticated
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  tracks: { type: array, items: { $ref: '#/components/schemas/Track' } }
+                  user: { $ref: '#/components/schemas/User' }
+                  token: { type: string, example: "your-internal-jwt-token" }
+        '400':
+          description: Invalid Google token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # --- CHARTS ---
+  /charts/tracks:
+    get:
+      operationId: getTopTracks
+      tags: [Charts]
+      summary: Get top 10 tracks
+      security: []
+      responses:
+        '200':
+          description: List of top tracks
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: '#/components/schemas/Track'
         '404':
-          description: Charts not found
+          description: Genres not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # --- DISCOVERY ---
+  /genres:
+    get:
+      operationId: getGenres
+      tags: [Discovery]
+      summary: Get all music genres
+      security: []
+      responses:
+        '200':
+          description: List of genres
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Genre' }
+        '404':
+          description: Genres not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /genres/{genreId}/playlists:
+    get:
+      operationId: getPlaylistsByGenre
+      tags: [Discovery]
+      summary: Get playlists by genre
+      security: []
+      parameters:
+        - name: genreId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Success
+        '404':
+          description: Genre not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # --- ARTISTS ---
+  /artists:
+    get:
+      operationId: getTopArtists
+      tags: [Artists]
+      summary: Get top artists
+      security: []
+      responses:
+        '200':
+          description: Success
+        '404':
+          description: No artists found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
 
   /artists/{id}/top:
     get:
@@ -150,25 +276,96 @@ paths:
           description: Success
         '404':
           description: Artist not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
 
+  /artists/{id}/albums:
+    get:
+      operationId: getArtistAlbums
+      tags: [Artists]
+      summary: Get artist albums
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of albums
+        '404':
+          description: Artist not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # --- ALBUMS ---
+  /albums/{albumId}:
+    get:
+      operationId: getAlbumInfo
+      tags: [Albums]
+      summary: Get album details
+      security: []
+      parameters:
+        - name: albumId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Album details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Album' }
+        '404':
+          description: Album not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # --- SEARCH ---
+  /search:
+    get:
+      operationId: searchMusic
+      tags: [Search]
+      summary: Search for albums/artists
+      security: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query (e.g. artist name)
+          schema: { type: string }
+      responses:
+        '200':
+          description: Search results
+        '400':
+          description: Missing search query
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # --- FAVORITES ---
   /favorites:
     get:
       operationId: getFavorites
       tags: [Favorites]
       summary: Get user favorites
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       responses:
         '200':
           description: Success
         '401':
-          description: Token missing or invalid
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
     post:
       operationId: addToFavorites
       tags: [Favorites]
-      summary: Add to favorites
-      security:
-        - bearerAuth: []
+      summary: Add track to favorites
+      security: [{ bearerAuth: [] }]
       requestBody:
         required: true
         content:
@@ -179,26 +376,9 @@ paths:
                 trackId: { type: string }
       responses:
         '201':
-          description: Added
+          description: Added to favorites
         '401':
           description: Unauthorized
-
-    delete:
-      operationId: removeFromFavorites
-      tags: [Favorites]
-      summary: Remove from favorites
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                trackId: { type: string }
-      responses:
-        '200':
-          description: Removed
-        '401':
-          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
