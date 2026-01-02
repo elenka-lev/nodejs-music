@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    password: { type: String, required: true },
+    password: { type: String, required: false },
     googleId: { type: String },
     avatar: { type: String },
     favorites: {
