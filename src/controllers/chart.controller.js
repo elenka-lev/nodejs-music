@@ -17,3 +17,12 @@ export const getTopTracks = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getTopAlbums = async (req, res, next) => {
+  try {
+    const data = await fetchTopCharts();
+    res.json(data.albums.data);
+  } catch (error) {
+    next(error);
+  }
+};

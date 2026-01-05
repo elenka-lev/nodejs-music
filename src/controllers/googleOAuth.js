@@ -11,6 +11,18 @@ export const googleLogin = async (req, res, next) => {
     const result = await googleAuth(idToken);
     res.json(result);
   } catch (e) {
-    next(e);
+    if (e.message.includes('Wrong number of segments') || e.message.includes('Token used too late')) {
+      return res.status(401).json({ 
+        message: 'Invalid or expired Google token',
+        details: e.message 
+      });
+    }
+    
+    
+    console.error("FULL ERROR:", e); 
+    res.status(500).json({ 
+      message: 'Server error during Google Auth', 
+      error: e.message 
+    });
   }
 };

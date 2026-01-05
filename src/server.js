@@ -2,8 +2,7 @@ import express from 'express';
 import pino from 'pino-http';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path'; 
-// import { fileURLToPath } from 'url'; 
+import path from 'path';  
 import YAML from 'yamljs'; 
 import swaggerUi from 'swagger-ui-express';
 
