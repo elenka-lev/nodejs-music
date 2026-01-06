@@ -34,31 +34,34 @@ export const toggleFavoriteService = async (userId, trackData) => {
   const user = await User.findById(userId);
   if (!user) throw new Error('User not found');
 
+  
   let track = await Track.findOne({ trackId: trackData.id.toString() });
 
   if (!track) {
+    
     track = await Track.create({
       trackId: trackData.id.toString(),
-      title: trackData.title,
-      artist: trackData.artist.name,
-      cover: trackData.album.cover_medium,
-      preview: trackData.preview,
+      title: trackData.title || 'Unknown Track',
+      artist: trackData.artist?.name || trackData.artist || 'Unknown Artist',
+      cover: trackData.album?.cover_medium || trackData.cover || '',
+      preview: trackData.preview || '',
     });
   }
 
   const isFavorite = user.favorites.some(
-    (favId) => favId.toString() === track._id.toString(),
+    (favId) => favId.toString() === track._id.toString()
   );
 
   if (isFavorite) {
     user.favorites = user.favorites.filter(
-      (favId) => favId.toString() !== track._id.toString(),
+      (favId) => favId.toString() !== track._id.toString()
     );
   } else {
     user.favorites.push(track._id);
   }
 
   await user.save();
+
 
   const updatedUser = await User.findById(userId).populate('favorites');
   return updatedUser.favorites;
