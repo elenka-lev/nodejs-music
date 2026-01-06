@@ -42,11 +42,12 @@ export const getFavoritesList = async (req, res, next) => {
 
 export const toggleFavorite = async (req, res, next) => {
   try {
-    const trackId = req.body.trackId;
-     if (!trackId) {
-       return res.status(400).json({ message: 'trackId is required' });
-     }
-    const favorites = await toggleFavoriteService(req.user._id, trackId);
+    const { trackData } = req.body; 
+
+    if (!trackData || !trackData.id) {
+      return res.status(400).json({ message: 'trackData with id is required' });
+    }
+    const favorites = await toggleFavoriteService(req.user._id, trackData);
     res.json({ favorites });
   } catch (e) {
     next(e);

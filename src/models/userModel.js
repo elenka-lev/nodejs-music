@@ -14,8 +14,8 @@ const userSchema = new mongoose.Schema(
     googleId: { type: String },
     avatar: { type: String },
     favorites: {
-      type: [String],
-      default: [],
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'Track',
     },
   },
   { timestamps: true },
