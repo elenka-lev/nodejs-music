@@ -45,6 +45,8 @@ export const toggleFavoriteService = async (userId, trackData) => {
       artist: trackData.artist?.name || trackData.artist || 'Unknown Artist',
       cover: trackData.album?.cover_medium || trackData.cover || '',
       preview: trackData.preview || '',
+      duration: trackData.duration, 
+      releaseDate: trackData.release_date || trackData.album?.release_date,
     });
   }
 
