@@ -24,7 +24,7 @@ export const removeFavorite = async (userId, trackId) => {
 };
 
 export const getFavorites = async (userId) => {
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).populate('favorites');
   if (!user) throw new Error('User not found');
   return user.favorites;
 };
