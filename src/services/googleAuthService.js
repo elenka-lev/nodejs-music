@@ -28,6 +28,10 @@ export const googleAuth = async (idToken) => {
       googleId,
       avatar: picture,
     });
+  } else if (!user.googleId) {
+    user.googleId = googleId;
+    if (!user.avatar) user.avatar = picture;
+    await user.save();
   }
 
  
